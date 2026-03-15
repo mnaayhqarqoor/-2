@@ -1,6 +1,8 @@
 backend:
   name: git-gateway
-  branch: main
+  branch: main # تأكد أن اسم الفرع عندك هو main وليس master
+
+local_backend: true # للسماح بالتجربة المحلية
 
 media_folder: "images"
 public_folder: "/images"
@@ -8,8 +10,10 @@ public_folder: "/images"
 collections:
   - name: "episodes"
     label: "الحلقات"
-    folder: "content/episodes"
+    folder: "content/episodes" # سيتم تخزين الحلقات هنا
     create: true
+    extension: json
+    format: json
     slug: "episode-{{number}}"
     fields:
       - { label: "رقم الحلقة", name: "number", widget: "number" }
