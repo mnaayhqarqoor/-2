@@ -3,49 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة حلقات رمضان 2026</title>
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <title>رمضان 2026 - مسلسلاتي</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 900px; margin: 30px auto; }
-        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; color: #38bdf8; transition: 0.3s; display: block; }
-        .card:hover { background: #38bdf8; color: #0f172a; transform: translateY(-5px); }
-        h1 { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); padding: 20px; margin: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; max-width: 800px; margin: 20px auto; }
+        .card { background: #38bdf8; color: #0f172a; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; transition: 0.3s; }
+        .admin-section { border-top: 2px dashed #334155; margin-top: 50px; padding-top: 20px; display: none; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 60%; margin: 5px; }
+        button { padding: 10px 20px; background: #22c55e; border: none; border-radius: 5px; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>🌙 مسلسلات رمضان</h1>
-    <div id="content" class="grid">جاري تحميل الحلقات...</div>
+
+    <h1>🌙 مسلسلات رمضان 2026</h1>
+    <div id="episodesList" class="grid">جاري التحميل...</div>
+
+    <button onclick="showAdmin()" style="background: transparent; color: #1e293b; font-size: 10px;">إدارة</button>
+
+    <div id="adminArea" class="glass admin-section">
+        <h3>إضافة حلقة جديدة</h3>
+        <input type="number" id="epNum" placeholder="رقم الحلقة">
+        <input type="text" id="epLink" placeholder="رابط المشاهدة">
+        <button onclick="addEpisode()">نشر الحلقة فوراً ✅</button>
+    </div>
 
     <script>
-        // كود جلب الحلقات من المجلد الذي ستنشئه لوحة التحكم
-        async function fetchEpisodes() {
-            try {
-                // ملاحظة: Decap CMS سيقوم بإنشاء ملفات داخل content/episodes
-                // سنقوم بجلبها تلقائياً (تحتاج لإضافة حلقة واحدة أولاً ليعمل الرابط)
-                const res = await fetch('/episodes.json'); 
-                const data = await res.json();
-                const container = document.getElementById('content');
-                container.innerHTML = data.map(ep => `
-                    <a href="${ep.link}" class="card" target="_blank">
-                        <h3>الحلقة ${ep.number}</h3>
-                    </a>
-                `).join('');
-            } catch (e) {
-                document.getElementById('content').innerHTML = "لا توجد حلقات حالياً. اضف حلقات من لوحة التحكم /admin";
+        // إعدادات Firebase (سأعلمك كيف تجلبها في دقيقة)
+        const firebaseConfig = {
+            databaseURL: "https://YOUR-PROJECT-ID.firebaseio.com" 
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // جلب الحلقات وعرضها تلقائياً
+        db.ref('episodes').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const list = document.getElementById('episodesList');
+            list.innerHTML = '';
+            for (let id in data) {
+                list.innerHTML += `<a href="${data[id].link}" class="card" target="_blank">الحلقة ${data[id].number}</a>`;
+            }
+        });
+
+        // وظيفة الإضافة (لوحة التحكم)
+        function addEpisode() {
+            const num = document.getElementById('epNum').value;
+            const link = document.getElementById('epLink').value;
+            if(num && link) {
+                db.ref('episodes').push({ number: num, link: link });
+                alert("تمت الإضافة بنجاح!");
             }
         }
-        fetchEpisodes();
 
-        // كود التوجيه بعد تسجيل الدخول
-        if (window.netlifyIdentity) {
-            window.netlifyIdentity.on("init", user => {
-                if (!user) {
-                    window.netlifyIdentity.on("login", () => {
-                        document.location.href = "/admin/";
-                    });
-                }
-            });
+        function showAdmin() {
+            const pass = prompt("أدخل كلمة السر للدخول للوحة التحكم:");
+            if(pass === "123") { // يمكنك تغيير كلمة السر هنا
+                document.getElementById('adminArea').style.display = 'block';
+            }
         }
     </script>
 </body>
