@@ -3,43 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة مسلسلات رمضان</title>
+    <title>مكتبة مسلسلات رمضان 2026</title>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
-        body { background: #0b1120; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
-        .card { 
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); 
-            padding: 25px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.2);
-            text-decoration: none; color: #38bdf8; font-weight: bold; font-size: 1.2rem;
-            transition: 0.3s; display: block;
-        }
-        .card:hover { background: #38bdf8; color: #0b1120; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.2); }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
+        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(56,189,248,0.2); text-decoration: none; color: #38bdf8; transition: 0.3s; display: block; }
+        .card:hover { background: #38bdf8; color: #0f172a; transform: translateY(-5px); }
+        h1 { color: #38bdf8; margin-bottom: 5px; }
     </style>
 </head>
 <body>
-
-    <h1>🌙 مكتبة مسلسلات رمضان</h1>
-    <p>شاهد حلقاتك المفضلة فور صدورها</p>
-
-    <div id="seriesList" class="grid">
-        </div>
+    <h1>🌙 مسلسلات رمضان</h1>
+    <p>تحديث تلقائي فور إضافة الحلقات</p>
+    <div id="content" class="grid">جاري التحميل...</div>
 
     <script>
-        // هذا الكود يقرأ البيانات من ملف اسمه data.json في مستودعك
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('seriesList');
-                list.innerHTML = data.map(item => `
-                    <a href="${item.url}" class="card" target="_blank">
-                        ${item.name}
+        // كود ذكي لجلب كل الحلقات من المجلد الذي ستنشئه لوحة التحكم
+        async function loadData() {
+            try {
+                const response = await fetch('/index.json'); // Netlify سيقوم بإنشاء هذا الملف
+                const data = await response.json();
+                const container = document.getElementById('content');
+                container.innerHTML = data.episodes.map(ep => `
+                    <a href="${ep.link}" class="card" target="_blank">
+                        <h3>${ep.title}</h3>
                     </a>
                 `).join('');
-            })
-            .catch(() => {
-                document.getElementById('seriesList').innerHTML = "<p>أضف أول مسلسل في ملف data.json ليبدأ الموقع بالعمل!</p>";
+            } catch (e) {
+                document.getElementById('content').innerHTML = "اضف حلقات من لوحة التحكم /admin";
+            }
+        }
+        loadData();
+
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); }
             });
+        }
     </script>
 </body>
 </html>
