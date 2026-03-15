@@ -3,67 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رمضان 2026 - مسلسلاتي</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>مسلسلات رمضان 2026</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); padding: 20px; margin: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; max-width: 800px; margin: 20px auto; }
-        .card { background: #38bdf8; color: #0f172a; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .admin-section { border-top: 2px dashed #334155; margin-top: 50px; padding-top: 20px; display: none; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 60%; margin: 5px; }
-        button { padding: 10px 20px; background: #22c55e; border: none; border-radius: 5px; color: white; cursor: pointer; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white; font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px; padding: 30px; width: 100%; max-width: 600px; text-align: center;
+        }
+        h1 { color: #38bdf8; margin-bottom: 20px; }
+        .links-list { display: grid; gap: 10px; margin-top: 20px; }
+        .ep-link {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid #38bdf8;
+            padding: 15px; border-radius: 12px;
+            color: #38bdf8; text-decoration: none; font-weight: bold;
+            transition: 0.3s;
+        }
+        .ep-link:hover { background: #38bdf8; color: #0f172a; }
     </style>
 </head>
 <body>
-
-    <h1>🌙 مسلسلات رمضان 2026</h1>
-    <div id="episodesList" class="grid">جاري التحميل...</div>
-
-    <button onclick="showAdmin()" style="background: transparent; color: #1e293b; font-size: 10px;">إدارة</button>
-
-    <div id="adminArea" class="glass admin-section">
-        <h3>إضافة حلقة جديدة</h3>
-        <input type="number" id="epNum" placeholder="رقم الحلقة">
-        <input type="text" id="epLink" placeholder="رابط المشاهدة">
-        <button onclick="addEpisode()">نشر الحلقة فوراً ✅</button>
+    <div class="container">
+        <h1>🌙 حلقات رمضان 2026</h1>
+        <div id="linksContainer" class="links-list">جاري تحميل الحلقات...</div>
     </div>
 
     <script>
-        // إعدادات Firebase (سأعلمك كيف تجلبها في دقيقة)
-        const firebaseConfig = {
-            databaseURL: "https://YOUR-PROJECT-ID.firebaseio.com" 
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // جلب الحلقات وعرضها تلقائياً
-        db.ref('episodes').on('value', (snapshot) => {
-            const data = snapshot.val();
-            const list = document.getElementById('episodesList');
-            list.innerHTML = '';
-            for (let id in data) {
-                list.innerHTML += `<a href="${data[id].link}" class="card" target="_blank">الحلقة ${data[id].number}</a>`;
-            }
-        });
-
-        // وظيفة الإضافة (لوحة التحكم)
-        function addEpisode() {
-            const num = document.getElementById('epNum').value;
-            const link = document.getElementById('epLink').value;
-            if(num && link) {
-                db.ref('episodes').push({ number: num, link: link });
-                alert("تمت الإضافة بنجاح!");
-            }
-        }
-
-        function showAdmin() {
-            const pass = prompt("أدخل كلمة السر للدخول للوحة التحكم:");
-            if(pass === "123") { // يمكنك تغيير كلمة السر هنا
-                document.getElementById('adminArea').style.display = 'block';
-            }
-        }
+        // كود بسيط جداً يقرأ الروابط من ملف نصي
+        fetch('links.txt')
+            .then(response => response.text())
+            .then(text => {
+                const lines = text.split('\n');
+                const container = document.getElementById('linksContainer');
+                container.innerHTML = '';
+                lines.forEach((line, index) => {
+                    if(line.trim() !== "") {
+                        const link = document.createElement('a');
+                        link.href = line.trim();
+                        link.target = "_blank";
+                        link.className = "ep-link";
+                        link.innerText = `مشاهدة الحلقة ${index + 1}`;
+                        container.appendChild(link);
+                    }
+                });
+            })
+            .catch(() => document.getElementById('linksContainer').innerText = "أضف روابط في ملف links.txt أولاً!");
     </script>
 </body>
 </html>
