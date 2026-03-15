@@ -3,57 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مسلسلات رمضان 2026</title>
+    <title>دليل مسلسلات رمضان 2026</title>
     <style>
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: white; font-family: 'Segoe UI', sans-serif;
-            min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px; padding: 30px; width: 100%; max-width: 600px; text-align: center;
-        }
-        h1 { color: #38bdf8; margin-bottom: 20px; }
-        .links-list { display: grid; gap: 10px; margin-top: 20px; }
-        .ep-link {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid #38bdf8;
-            padding: 15px; border-radius: 12px;
-            color: #38bdf8; text-decoration: none; font-weight: bold;
-            transition: 0.3s;
-        }
-        .ep-link:hover { background: #38bdf8; color: #0f172a; }
+        :root { --blue: #38bdf8; --glass: rgba(255, 255, 255, 0.05); }
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; text-align: center; }
+        .container { max-width: 700px; margin: auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: var(--blue); margin-bottom: 20px; }
+        .ep-list { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+        .ep-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-decoration: none; color: white; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; border-right: 4px solid var(--blue); }
+        .ep-item:hover { background: var(--blue); color: #0f172a; transform: scale(1.02); }
+        
+        /* لوحة التحكم البسيطة */
+        .admin-box { margin-top: 40px; padding: 20px; border-top: 1px dashed #334155; }
+        input { padding: 12px; border-radius: 8px; border: none; margin: 5px; width: 80%; background: #1e293b; color: white; }
+        .btn { padding: 12px 25px; background: var(--blue); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌙 حلقات رمضان 2026</h1>
-        <div id="linksContainer" class="links-list">جاري تحميل الحلقات...</div>
+
+<div class="container">
+    <div class="glass-card">
+        <h1>🌙 قائمة المسلسلات والحلقات</h1>
+        <div id="linksContainer" class="ep-list">
+            </div>
     </div>
 
-    <script>
-        // كود بسيط جداً يقرأ الروابط من ملف نصي
-        fetch('links.txt')
-            .then(response => response.text())
-            .then(text => {
-                const lines = text.split('\n');
-                const container = document.getElementById('linksContainer');
-                container.innerHTML = '';
-                lines.forEach((line, index) => {
-                    if(line.trim() !== "") {
-                        const link = document.createElement('a');
-                        link.href = line.trim();
-                        link.target = "_blank";
-                        link.className = "ep-link";
-                        link.innerText = `مشاهدة الحلقة ${index + 1}`;
-                        container.appendChild(link);
-                    }
-                });
-            })
-            .catch(() => document.getElementById('linksContainer').innerText = "أضف روابط في ملف links.txt أولاً!");
-    </script>
+    <div class="admin-box">
+        <h3>إضافة حلقة/مسلسل جديد</h3>
+        <input type="text" id="title" placeholder="اسم المسلسل (مثلاً: الحلقة 1)">
+        <input type="text" id="url" placeholder="ضع رابط المشاهدة هنا">
+        <button class="btn" onclick="saveLink()">إضافة للموقع فوراً ✅</button>
+        <p style="font-size: 12px; color: #64748b; margin-top: 10px;">(ملاحظة: في هذا النموذج البسيط، البيانات تُحفظ في متصفحك الحالي)</p>
+    </div>
+</div>
+
+<script>
+    // وظيفة لعرض الروابط المخزنة
+    function displayLinks() {
+        const container = document.getElementById('linksContainer');
+        const savedLinks = JSON.parse(localStorage.getItem('myRamadanLinks') || '[]');
+        
+        if (savedLinks.length === 0) {
+            container.innerHTML = '<p style="color:#64748b">لا توجد حلقات مضافة بعد.</p>';
+            return;
+        }
+
+        container.innerHTML = savedLinks.map((item, index) => `
+            <a href="${item.url}" target="_blank" class="ep-item">
+                <span>${item.title}</span>
+                <span style="font-size: 12px; opacity: 0.7;">مشاهدة ←</span>
+            </a>
+        `).join('');
+    }
+
+    // وظيفة حفظ الرابط الجديد
+    function saveLink() {
+        const title = document.getElementById('title').value;
+        const url = document.getElementById('url').value;
+
+        if (title && url) {
+            const savedLinks = JSON.parse(localStorage.getItem('myRamadanLinks') || '[]');
+            savedLinks.push({ title, url });
+            localStorage.setItem('myRamadanLinks', JSON.stringify(savedLinks));
+            
+            // مسح الخانات بعد الإضافة
+            document.getElementById('title').value = '';
+            document.getElementById('url').value = '';
+            
+            displayLinks();
+            alert("تمت الإضافة بنجاح!");
+        } else {
+            alert("يرجى ملء الاسم والرابط");
+        }
+    }
+
+    // تشغيل العرض عند فتح الصفحة
+    displayLinks();
+</script>
+
 </body>
 </html>
