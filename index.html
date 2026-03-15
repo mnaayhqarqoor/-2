@@ -4,82 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دليل مسلسلات رمضان 2026</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --blue: #38bdf8; --glass: rgba(255, 255, 255, 0.05); }
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; text-align: center; }
-        .container { max-width: 700px; margin: auto; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: var(--blue); margin-bottom: 20px; }
-        .ep-list { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
-        .ep-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-decoration: none; color: white; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; border-right: 4px solid var(--blue); }
-        .ep-item:hover { background: var(--blue); color: #0f172a; transform: scale(1.02); }
+        :root { --primary: #38bdf8; --glass: rgba(255, 255, 255, 0.05); }
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { color: var(--primary); font-size: 2.5rem; }
         
-        /* لوحة التحكم البسيطة */
-        .admin-box { margin-top: 40px; padding: 20px; border-top: 1px dashed #334155; }
-        input { padding: 12px; border-radius: 8px; border: none; margin: 5px; width: 80%; background: #1e293b; color: white; }
-        .btn { padding: 12px 25px; background: var(--blue); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* تصميم الكروت */
+        .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .series-card { 
+            background: var(--glass); backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; 
+            padding: 20px; transition: 0.3s; text-decoration: none; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .series-card:hover { background: rgba(56, 189, 248, 0.1); transform: scale(1.02); border-color: var(--primary); }
+        .btn-watch { background: var(--primary); color: #0f172a; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
+
+        /* لوحة التحكم السرية */
+        .admin-panel { 
+            display: none; background: #1e293b; padding: 20px; border-radius: 15px; 
+            margin-bottom: 30px; border: 2px solid #334155; 
+        }
+        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 10px; outline: none; }
+        .add-btn { background: #22c55e; border: none; color: white; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        .admin-trigger { position: fixed; bottom: 10px; left: 10px; opacity: 0.2; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="glass-card">
-        <h1>🌙 قائمة المسلسلات والحلقات</h1>
-        <div id="linksContainer" class="ep-list">
-            </div>
+    <div class="header">
+        <h1>🌙 مكتبة مسلسلات رمضان</h1>
+        <p>شاهد جميع حلقاتك المفضلة في مكان واحد</p>
     </div>
 
-    <div class="admin-box">
-        <h3>إضافة حلقة/مسلسل جديد</h3>
-        <input type="text" id="title" placeholder="اسم المسلسل (مثلاً: الحلقة 1)">
-        <input type="text" id="url" placeholder="ضع رابط المشاهدة هنا">
-        <button class="btn" onclick="saveLink()">إضافة للموقع فوراً ✅</button>
-        <p style="font-size: 12px; color: #64748b; margin-top: 10px;">(ملاحظة: في هذا النموذج البسيط، البيانات تُحفظ في متصفحك الحالي)</p>
+    <div id="adminPanel" class="admin-panel">
+        <h3>إضافة مسلسل/حلقة جديدة</h3>
+        <input type="text" id="sName" placeholder="اسم المسلسل أو الحلقة (مثلاً: شباب البومب - الحلقة 1)">
+        <input type="text" id="sLink" placeholder="ضع رابط المشاهدة هنا">
+        <button class="add-btn" onclick="saveToFirebase()">نشر الآن على الموقع 🚀</button>
+    </div>
+
+    <div id="seriesList" class="series-grid">
+        <p style="text-align: center; width: 100%;">جاري تحميل المسلسلات...</p>
     </div>
 </div>
 
+<div class="admin-trigger" onclick="unlockAdmin()">لوحة الإدارة</div>
+
 <script>
-    // وظيفة لعرض الروابط المخزنة
-    function displayLinks() {
-        const container = document.getElementById('linksContainer');
-        const savedLinks = JSON.parse(localStorage.getItem('myRamadanLinks') || '[]');
-        
-        if (savedLinks.length === 0) {
-            container.innerHTML = '<p style="color:#64748b">لا توجد حلقات مضافة بعد.</p>';
+    // إعدادات Firebase (مجانية بالكامل)
+    // سأضع لك إعدادات افتراضية، لكن يفضل إنشاء مشروعك الخاص لتتحكم بالبيانات
+    const firebaseConfig = {
+        databaseURL: "https://ramadan-2026-default-rtdb.firebaseio.com" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 1. جلب البيانات وعرضها
+    db.ref('shows').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const list = document.getElementById('seriesList');
+        list.innerHTML = '';
+        if(!data) {
+            list.innerHTML = '<p>لا توجد مسلسلات مضافة بعد.</p>';
             return;
         }
+        for (let key in data) {
+            list.innerHTML += `
+                <a href="${data[key].link}" target="_blank" class="series-card">
+                    <div>
+                        <strong style="font-size: 1.1rem;">${data[key].name}</strong>
+                        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">متاح الآن</div>
+                    </div>
+                    <span class="btn-watch">مشاهدة</span>
+                </a>
+            `;
+        }
+    });
 
-        container.innerHTML = savedLinks.map((item, index) => `
-            <a href="${item.url}" target="_blank" class="ep-item">
-                <span>${item.title}</span>
-                <span style="font-size: 12px; opacity: 0.7;">مشاهدة ←</span>
-            </a>
-        `).join('');
-    }
-
-    // وظيفة حفظ الرابط الجديد
-    function saveLink() {
-        const title = document.getElementById('title').value;
-        const url = document.getElementById('url').value;
-
-        if (title && url) {
-            const savedLinks = JSON.parse(localStorage.getItem('myRamadanLinks') || '[]');
-            savedLinks.push({ title, url });
-            localStorage.setItem('myRamadanLinks', JSON.stringify(savedLinks));
-            
-            // مسح الخانات بعد الإضافة
-            document.getElementById('title').value = '';
-            document.getElementById('url').value = '';
-            
-            displayLinks();
+    // 2. وظيفة الحفظ
+    function saveToFirebase() {
+        const name = document.getElementById('sName').value;
+        const link = document.getElementById('sLink').value;
+        if(name && link) {
+            db.ref('shows').push({ name: name, link: link });
+            document.getElementById('sName').value = '';
+            document.getElementById('sLink').value = '';
             alert("تمت الإضافة بنجاح!");
         } else {
             alert("يرجى ملء الاسم والرابط");
         }
     }
 
-    // تشغيل العرض عند فتح الصفحة
-    displayLinks();
+    // 3. فتح لوحة الإدارة
+    function unlockAdmin() {
+        const pass = prompt("أدخل كلمة السر:");
+        if(pass === "0000") { // يمكنك تغيير كلمة السر هنا
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+    }
 </script>
 
 </body>
