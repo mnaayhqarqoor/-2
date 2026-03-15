@@ -1,0 +1,16 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "episodes"
+    label: "الحلقات"
+    folder: "content/episodes"
+    create: true
+    slug: "episode-{{number}}"
+    fields:
+      - { label: "رقم الحلقة", name: "number", widget: "number" }
+      - { label: "رابط المشاهدة", name: "link", widget: "string" }
