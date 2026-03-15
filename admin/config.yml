@@ -1,0 +1,15 @@
+backend:
+  name: git-gateway
+  branch: main
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: "episodes"
+    label: "الحلقات"
+    folder: "content/episodes"
+    create: true
+    slug: "{{title}}"
+    fields:
+      - { label: "عنوان الحلقة (اسم المسلسل)", name: "title", widget: "string" }
+      - { label: "رابط المشاهدة", name: "link", widget: "string" }
