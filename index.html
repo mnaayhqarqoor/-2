@@ -3,113 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل مسلسلات رمضان 2026</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>مكتبة مسلسلات رمضان</title>
     <style>
-        :root { --primary: #38bdf8; --glass: rgba(255, 255, 255, 0.05); }
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { color: var(--primary); font-size: 2.5rem; }
-        
-        /* تصميم الكروت */
-        .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .series-card { 
-            background: var(--glass); backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; 
-            padding: 20px; transition: 0.3s; text-decoration: none; color: white;
-            display: flex; justify-content: space-between; align-items: center;
+        body { background: #0b1120; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
+        .card { 
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); 
+            padding: 25px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.2);
+            text-decoration: none; color: #38bdf8; font-weight: bold; font-size: 1.2rem;
+            transition: 0.3s; display: block;
         }
-        .series-card:hover { background: rgba(56, 189, 248, 0.1); transform: scale(1.02); border-color: var(--primary); }
-        .btn-watch { background: var(--primary); color: #0f172a; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
-
-        /* لوحة التحكم السرية */
-        .admin-panel { 
-            display: none; background: #1e293b; padding: 20px; border-radius: 15px; 
-            margin-bottom: 30px; border: 2px solid #334155; 
-        }
-        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 10px; outline: none; }
-        .add-btn { background: #22c55e; border: none; color: white; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        .admin-trigger { position: fixed; bottom: 10px; left: 10px; opacity: 0.2; cursor: pointer; font-size: 12px; }
+        .card:hover { background: #38bdf8; color: #0b1120; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.2); }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>🌙 مكتبة مسلسلات رمضان</h1>
-        <p>شاهد جميع حلقاتك المفضلة في مكان واحد</p>
-    </div>
+    <h1>🌙 مكتبة مسلسلات رمضان</h1>
+    <p>شاهد حلقاتك المفضلة فور صدورها</p>
 
-    <div id="adminPanel" class="admin-panel">
-        <h3>إضافة مسلسل/حلقة جديدة</h3>
-        <input type="text" id="sName" placeholder="اسم المسلسل أو الحلقة (مثلاً: شباب البومب - الحلقة 1)">
-        <input type="text" id="sLink" placeholder="ضع رابط المشاهدة هنا">
-        <button class="add-btn" onclick="saveToFirebase()">نشر الآن على الموقع 🚀</button>
-    </div>
+    <div id="seriesList" class="grid">
+        </div>
 
-    <div id="seriesList" class="series-grid">
-        <p style="text-align: center; width: 100%;">جاري تحميل المسلسلات...</p>
-    </div>
-</div>
-
-<div class="admin-trigger" onclick="unlockAdmin()">لوحة الإدارة</div>
-
-<script>
-    // إعدادات Firebase (مجانية بالكامل)
-    // سأضع لك إعدادات افتراضية، لكن يفضل إنشاء مشروعك الخاص لتتحكم بالبيانات
-    const firebaseConfig = {
-        databaseURL: "https://ramadan-2026-default-rtdb.firebaseio.com" 
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // 1. جلب البيانات وعرضها
-    db.ref('shows').on('value', (snapshot) => {
-        const data = snapshot.val();
-        const list = document.getElementById('seriesList');
-        list.innerHTML = '';
-        if(!data) {
-            list.innerHTML = '<p>لا توجد مسلسلات مضافة بعد.</p>';
-            return;
-        }
-        for (let key in data) {
-            list.innerHTML += `
-                <a href="${data[key].link}" target="_blank" class="series-card">
-                    <div>
-                        <strong style="font-size: 1.1rem;">${data[key].name}</strong>
-                        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">متاح الآن</div>
-                    </div>
-                    <span class="btn-watch">مشاهدة</span>
-                </a>
-            `;
-        }
-    });
-
-    // 2. وظيفة الحفظ
-    function saveToFirebase() {
-        const name = document.getElementById('sName').value;
-        const link = document.getElementById('sLink').value;
-        if(name && link) {
-            db.ref('shows').push({ name: name, link: link });
-            document.getElementById('sName').value = '';
-            document.getElementById('sLink').value = '';
-            alert("تمت الإضافة بنجاح!");
-        } else {
-            alert("يرجى ملء الاسم والرابط");
-        }
-    }
-
-    // 3. فتح لوحة الإدارة
-    function unlockAdmin() {
-        const pass = prompt("أدخل كلمة السر:");
-        if(pass === "0000") { // يمكنك تغيير كلمة السر هنا
-            document.getElementById('adminPanel').style.display = 'block';
-        }
-    }
-</script>
-
+    <script>
+        // هذا الكود يقرأ البيانات من ملف اسمه data.json في مستودعك
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('seriesList');
+                list.innerHTML = data.map(item => `
+                    <a href="${item.url}" class="card" target="_blank">
+                        ${item.name}
+                    </a>
+                `).join('');
+            })
+            .catch(() => {
+                document.getElementById('seriesList').innerHTML = "<p>أضف أول مسلسل في ملف data.json ليبدأ الموقع بالعمل!</p>";
+            });
+    </script>
 </body>
 </html>
