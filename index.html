@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة مسلسلات رمضان</title>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 900px; margin: 30px auto; }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; color: #38bdf8; transition: 0.3s; }
+        .card:hover { background: #38bdf8; color: #0f172a; transform: scale(1.05); }
+        h1 { color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <h1>🌙 رمضان 2026</h1>
+    <div id="content" class="grid">جاري تحميل الحلقات...</div>
+
+    <script>
+        // كود بسيط لجلب الحلقات التي ستضيفها من لوحة التحكم
+        fetch('/episodes.json').then(res => res.json()).then(data => {
+            const container = document.getElementById('content');
+            container.innerHTML = data.map(ep => `
+                <a href="${ep.link}" class="card" target="_blank">
+                    <h3>الحلقة ${ep.number}</h3>
+                    <small>مشاهدة الآن</small>
+                </a>
+            `).join('');
+        }).catch(() => document.getElementById('content').innerHTML = "اضف أول حلقة من لوحة التحكم!");
+    </script>
+</body>
+</html>
