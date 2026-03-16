@@ -1,0 +1,32 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  push:
+    branches: ["main"] # تأكد أن اسم الفرع الرئيسي لديك هو main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # تفعيل Node.js 24 لإيقاف تحذيرات deprecation
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # يرفع جميع الملفات في المجلد الرئيسي
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
