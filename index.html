@@ -3,279 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة أوجد اللون المختلف</title>
+    <title>تسجيل المسابقة</title>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --primary-color: #4a90e2;
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
-            overflow-x: hidden;
-        }
-
-        .container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        h1 {
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-        }
-
-        .stats {
+            padding: 20px;
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 1.5rem;
-            font-size: 1.2rem;
-            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-
-        #game-grid {
-            display: grid;
-            gap: 10px;
-            margin: 0 auto;
-            aspect-ratio: 1 / 1;
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
+            text-align: center;
         }
-
-        .color-box {
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.2s ease;
+        h2 { color: var(--primary-color); margin-bottom: 20px; }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
-
-        .color-box:hover {
-            transform: scale(0.98);
-        }
-
-        .color-box:active {
-            transform: scale(0.95);
-        }
-
-        .message-box {
-            position: fixed;
-            top: 20px;
-            padding: 15px 30px;
-            border-radius: 50px;
-            background: #333;
-            color: white;
-            display: none;
-            animation: fadeInOut 2s forwards;
-            z-index: 100;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-20px); }
-            15% { opacity: 1; transform: translateY(0); }
-            85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-
-        .btn {
-            background-color: var(--primary-color);
+        button {
+            background-color: var(--accent-color);
             color: white;
             border: none;
             padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1rem;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        
+        /* Admin Styles */
+        #adminPanel { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
-            transition: background 0.3s;
         }
-
-        .btn:hover {
-            background-color: #357abd;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
         }
-
-        .game-over-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 1000;
+        th { background-color: var(--primary-color); color: white; }
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+            width: auto;
+        }
+        .nav-link {
+            display: block;
+            margin-top: 20px;
+            color: #7f8c8d;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="message-box"></div>
-
     <div class="container">
-        <h1>أوجد اللون المختلف</h1>
-        <p>اضغط على المربع الذي يحمل درجة لون مختلفة قليلاً!</p>
-        
-        <div class="stats">
-            <div>المستوى: <span id="level">1</span></div>
-            <div>النقاط: <span id="score">0</span></div>
-            <div>الوقت: <span id="timer">15</span></div>
+        <!-- قسم المستخدم (التسجيل) -->
+        <div id="userSection">
+            <h2>📝 التسجيل في المسابقة</h2>
+            <input type="text" id="name" placeholder="الاسم الثلاثي">
+            <input type="email" id="email" placeholder="البريد الإلكتروني">
+            <input type="tel" id="phone" placeholder="رقم الهاتف">
+            <button onclick="registerUser()">تسجيل الآن</button>
+            
+            <span class="nav-link" onclick="showAdminLogin()">الدخول كمسؤول (Admin)</span>
         </div>
 
-        <div id="game-grid"></div>
-    </div>
+        <!-- قسم تسجيل دخول الأدمن -->
+        <div id="loginSection" style="display: none;">
+            <h2>🔐 دخول المشرف</h2>
+            <input type="password" id="adminPass" placeholder="أدخل الكود السري">
+            <button onclick="checkAdmin()">دخول</button>
+            <span class="nav-link" onclick="showUserSection()">عودة للتسجيل</span>
+        </div>
 
-    <!-- واجهة نهاية اللعبة -->
-    <div id="game-over" class="game-over-overlay">
-        <h2>انتهى الوقت!</h2>
-        <p style="font-size: 1.5rem;">نقاطك النهائية: <span id="final-score">0</span></p>
-        <p>أعلى مستوى وصلت له: <span id="final-level">1</span></p>
-        <button class="btn" onclick="resetGame()">العب مرة أخرى</button>
+        <!-- لوحة التحكم (الأدمن) -->
+        <div id="adminPanel">
+            <h2>📊 لوحة التحكم - المشاركين</h2>
+            <p>عدد المسجلين: <span id="count">0</span></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الهاتف</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    <!-- سيتم إضافة البيانات هنا -->
+                </tbody>
+            </table>
+            <button onclick="logout()" style="background-color: #7f8c8d; margin-top: 20px;">تسجيل خروج</button>
+            <button onclick="clearAllData()" style="background-color: #c0392b; margin-top: 10px;">حذف جميع البيانات</button>
+        </div>
     </div>
 
     <script>
-        let score = 0;
-        let level = 1;
-        let timeLeft = 15;
-        let timerInterval;
-        let gridSize = 2; // البداية بـ 2x2
-
-        const gridElement = document.getElementById('game-grid');
-        const scoreElement = document.getElementById('score');
-        const levelElement = document.getElementById('level');
-        const timerElement = document.getElementById('timer');
-        const gameOverOverlay = document.getElementById('game-over');
-        const toast = document.getElementById('toast');
-
-        function showToast(message) {
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        // دالة لإظهار واجهة المستخدم
+        function showUserSection() {
+            document.getElementById('userSection').style.display = 'block';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
         }
 
-        function generateColor() {
-            const r = Math.floor(Math.random() * 200);
-            const g = Math.floor(Math.random() * 200);
-            const b = Math.floor(Math.random() * 200);
-            
-            // تحديد "الصعوبة": كلما زاد المستوى، قل الفارق اللوني
-            // الفارق يبدأ بـ 40 وينقص تدريجياً حتى يصل لـ 5 كحد أدنى
-            const diff = Math.max(5, 40 - Math.floor(level / 2));
-            
-            const baseColor = `rgb(${r}, ${g}, ${b})`;
-            const oddColor = `rgb(${r + diff}, ${g + diff}, ${b + diff})`;
-            
-            return { baseColor, oddColor };
+        // دالة لإظهار واجهة تسجيل الدخول
+        function showAdminLogin() {
+            document.getElementById('userSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
         }
 
-        function createGrid() {
-            gridElement.innerHTML = '';
-            
-            // تحديد حجم الشبكة بناءً على المستوى
-            // 1-2: 2x2 | 3-5: 3x3 | 6-9: 4x4 | 10+: 5x5 وما فوق
-            if (level <= 2) gridSize = 2;
-            else if (level <= 5) gridSize = 3;
-            else if (level <= 9) gridSize = 4;
-            else if (level <= 14) gridSize = 5;
-            else if (level <= 20) gridSize = 6;
-            else gridSize = 8;
-
-            gridElement.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-            
-            const totalBoxes = gridSize * gridSize;
-            const oddIndex = Math.floor(Math.random() * totalBoxes);
-            const colors = generateColor();
-
-            for (let i = 0; i < totalBoxes; i++) {
-                const box = document.createElement('div');
-                box.classList.add('color-box');
-                
-                if (i === oddIndex) {
-                    box.style.backgroundColor = colors.oddColor;
-                    box.onclick = handleCorrectClick;
-                } else {
-                    box.style.backgroundColor = colors.baseColor;
-                    box.onclick = handleWrongClick;
-                }
-                
-                gridElement.appendChild(box);
+        // دالة التحقق من الكود السري
+        function checkAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === "1122") {
+                loadAdminPanel();
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('adminPass').value = ''; // مسح الحقل
+            } else {
+                alert("الكود السري غير صحيح!");
             }
         }
 
-        function handleCorrectClick() {
-            score += 10;
-            level += 1;
-            timeLeft += 2; // مكافأة وقت عند الإجابة الصحيحة
-            if (timeLeft > 15) timeLeft = 15; // حد أقصى للوقت
+        // دالة تسجيل مستخدم جديد
+        function registerUser() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            if (name === "" || phone === "") {
+                alert("يرجى ملء الاسم ورقم الهاتف");
+                return;
+            }
+
+            const user = { name, email, phone, date: new Date().toLocaleString() };
             
-            updateStats();
-            createGrid();
-        }
-
-        function handleWrongClick() {
-            timeLeft -= 3; // عقوبة وقت عند الإجابة الخاطئة
-            updateStats();
+            // جلب البيانات القديمة وإضافة الجديد
+            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
+            users.push(user);
             
-            // تأثير بصري للخطأ
-            gridElement.style.transform = 'translateX(10px)';
-            setTimeout(() => gridElement.style.transform = 'translateX(-10px)', 50);
-            setTimeout(() => gridElement.style.transform = 'translateX(0)', 100);
+            // حفظ البيانات في المتصفح
+            localStorage.setItem('contestUsers', JSON.stringify(users));
+
+            alert("تم التسجيل بنجاح!");
+            // تفريغ الحقول
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
         }
 
-        function updateStats() {
-            scoreElement.textContent = score;
-            levelElement.textContent = level;
-            timerElement.textContent = timeLeft;
+        // دالة تحميل لوحة التحكم وعرض البيانات
+        function loadAdminPanel() {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+            
+            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
+            document.getElementById('count').innerText = users.length;
+
+            users.forEach((user, index) => {
+                let row = `<tr>
+                    <td>${user.name}<br><small>${user.email}</small></td>
+                    <td>${user.phone}</td>
+                    <td><button class="delete-btn" onclick="deleteUser(${index})">حذف</button></td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
         }
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-                
-                if (timeLeft <= 0) {
-                    endGame();
-                }
-            }, 1000);
+        // دالة حذف مستخدم واحد
+        function deleteUser(index) {
+            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
+            users.splice(index, 1);
+            localStorage.setItem('contestUsers', JSON.stringify(users));
+            loadAdminPanel(); // تحديث الجدول
         }
 
-        function endGame() {
-            clearInterval(timerInterval);
-            document.getElementById('final-score').textContent = score;
-            document.getElementById('final-level').textContent = level;
-            gameOverOverlay.style.display = 'flex';
+        // دالة حذف كل البيانات
+        function clearAllData() {
+            if(confirm("هل أنت متأكد من حذف جميع المسجلين؟ لا يمكن التراجع.")) {
+                localStorage.removeItem('contestUsers');
+                loadAdminPanel();
+            }
         }
 
-        function resetGame() {
-            score = 0;
-            level = 1;
-            timeLeft = 15;
-            gridSize = 2;
-            gameOverOverlay.style.display = 'none';
-            updateStats();
-            createGrid();
-            startTimer();
+        // دالة تسجيل الخروج
+        function logout() {
+            showUserSection();
         }
-
-        // تشغيل اللعبة عند التحميل
-        window.onload = () => {
-            createGrid();
-            startTimer();
-        };
     </script>
 </body>
 </html>
