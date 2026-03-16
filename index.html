@@ -3,219 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل المسابقة</title>
+    <title>مسجل الشاشة الاحترافي</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --bg-color: #f4f7f6;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-        h2 { color: var(--primary-color); margin-bottom: 20px; }
-        input {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-        button:hover { background-color: #2980b9; }
-        
-        /* Admin Styles */
-        #adminPanel { display: none; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: right;
-        }
-        th { background-color: var(--primary-color); color: white; }
-        .delete-btn {
-            background-color: #e74c3c;
-            padding: 5px 10px;
-            font-size: 12px;
-            width: auto;
-        }
-        .nav-link {
-            display: block;
-            margin-top: 20px;
-            color: #7f8c8d;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f6f8fa; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px; width: 80%; max-width: 800px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        video { width: 100%; border-radius: 6px; background: #000; margin-bottom: 15px; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .start-btn { background-color: #2da44e; color: white; }
+        .stop-btn { background-color: #cf222e; color: white; }
+        button:disabled { background-color: #808080; cursor: not-allowed; }
+        #overlay-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #d0d7de; border-radius: 6px; box-sizing: border-box; }
+        .status { font-size: 0.9em; color: #57606a; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- قسم المستخدم (التسجيل) -->
-        <div id="userSection">
-            <h2>📝 التسجيل في المسابقة</h2>
-            <input type="text" id="name" placeholder="الاسم الثلاثي">
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
-            <input type="tel" id="phone" placeholder="رقم الهاتف">
-            <button onclick="registerUser()">تسجيل الآن</button>
-            
-            <span class="nav-link" onclick="showAdminLogin()">الدخول كمسؤول (Admin)</span>
-        </div>
+<div class="container">
+    <h2>🎥 مسجل الشاشة مع إضافة نصوص</h2>
+    
+    <input type="text" id="overlay-input" placeholder="اكتب ملاحظة أو نصاً ليظهر في التسجيل...">
 
-        <!-- قسم تسجيل دخول الأدمن -->
-        <div id="loginSection" style="display: none;">
-            <h2>🔐 دخول المشرف</h2>
-            <input type="password" id="adminPass" placeholder="أدخل الكود السري">
-            <button onclick="checkAdmin()">دخول</button>
-            <span class="nav-link" onclick="showUserSection()">عودة للتسجيل</span>
-        </div>
+    <video id="preview" autoplay muted></video>
 
-        <!-- لوحة التحكم (الأدمن) -->
-        <div id="adminPanel">
-            <h2>📊 لوحة التحكم - المشاركين</h2>
-            <p>عدد المسجلين: <span id="count">0</span></p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>الاسم</th>
-                        <th>الهاتف</th>
-                        <th>إجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTable">
-                    <!-- سيتم إضافة البيانات هنا -->
-                </tbody>
-            </table>
-            <button onclick="logout()" style="background-color: #7f8c8d; margin-top: 20px;">تسجيل خروج</button>
-            <button onclick="clearAllData()" style="background-color: #c0392b; margin-top: 10px;">حذف جميع البيانات</button>
-        </div>
+    <div class="controls">
+        <button id="startShare" class="start-btn">1. مشاركة الشاشة</button>
+        <button id="startRecord" class="start-btn" disabled>2. بدء التسجيل</button>
+        <button id="stopRecord" class="stop-btn" disabled>إيقاف وتحميل</button>
     </div>
 
-    <script>
-        // دالة لإظهار واجهة المستخدم
-        function showUserSection() {
-            document.getElementById('userSection').style.display = 'block';
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'none';
-        }
+    <div class="status" id="statusText">الحالة: جاهز للبدء</div>
+</div>
 
-        // دالة لإظهار واجهة تسجيل الدخول
-        function showAdminLogin() {
-            document.getElementById('userSection').style.display = 'none';
-            document.getElementById('loginSection').style.display = 'block';
-        }
+<script>
+    let mediaRecorder;
+    let recordedChunks = [];
+    let screenStream;
 
-        // دالة التحقق من الكود السري
-        function checkAdmin() {
-            const pass = document.getElementById('adminPass').value;
-            if (pass === "1122") {
-                loadAdminPanel();
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('adminPass').value = ''; // مسح الحقل
-            } else {
-                alert("الكود السري غير صحيح!");
-            }
-        }
+    const preview = document.getElementById('preview');
+    const startShareBtn = document.getElementById('startShare');
+    const startRecordBtn = document.getElementById('startRecord');
+    const stopRecordBtn = document.getElementById('stopRecord');
+    const statusText = document.getElementById('statusText');
 
-        // دالة تسجيل مستخدم جديد
-        function registerUser() {
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-
-            if (name === "" || phone === "") {
-                alert("يرجى ملء الاسم ورقم الهاتف");
-                return;
-            }
-
-            const user = { name, email, phone, date: new Date().toLocaleString() };
-            
-            // جلب البيانات القديمة وإضافة الجديد
-            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
-            users.push(user);
-            
-            // حفظ البيانات في المتصفح
-            localStorage.setItem('contestUsers', JSON.stringify(users));
-
-            alert("تم التسجيل بنجاح!");
-            // تفريغ الحقول
-            document.getElementById('name').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('phone').value = '';
-        }
-
-        // دالة تحميل لوحة التحكم وعرض البيانات
-        function loadAdminPanel() {
-            const tbody = document.getElementById('usersTable');
-            tbody.innerHTML = '';
-            
-            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
-            document.getElementById('count').innerText = users.length;
-
-            users.forEach((user, index) => {
-                let row = `<tr>
-                    <td>${user.name}<br><small>${user.email}</small></td>
-                    <td>${user.phone}</td>
-                    <td><button class="delete-btn" onclick="deleteUser(${index})">حذف</button></td>
-                </tr>`;
-                tbody.innerHTML += row;
+    // 1. وظيفة مشاركة الشاشة
+    startShareBtn.onclick = async () => {
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "always" },
+                audio: true
             });
+            preview.srcObject = screenStream;
+            startRecordBtn.disabled = false;
+            statusText.innerText = "الحالة: تم مشاركة الشاشة بنجاح";
+        } catch (err) {
+            console.error("خطأ: " + err);
+            statusText.innerText = "الحالة: تم إلغاء المشاركة أو حدث خطأ";
         }
+    };
 
-        // دالة حذف مستخدم واحد
-        function deleteUser(index) {
-            let users = JSON.parse(localStorage.getItem('contestUsers')) || [];
-            users.splice(index, 1);
-            localStorage.setItem('contestUsers', JSON.stringify(users));
-            loadAdminPanel(); // تحديث الجدول
-        }
+    // 2. وظيفة بدء التسجيل
+    startRecordBtn.onclick = () => {
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm; codecs=vp9' });
 
-        // دالة حذف كل البيانات
-        function clearAllData() {
-            if(confirm("هل أنت متأكد من حذف جميع المسجلين؟ لا يمكن التراجع.")) {
-                localStorage.removeItem('contestUsers');
-                loadAdminPanel();
-            }
-        }
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+        };
 
-        // دالة تسجيل الخروج
-        function logout() {
-            showUserSection();
-        }
-    </script>
+        mediaRecorder.onstop = exportVideo;
+
+        mediaRecorder.start();
+        startRecordBtn.disabled = true;
+        stopRecordBtn.disabled = false;
+        statusText.innerText = "الحالة: جارٍ التسجيل الآن...";
+    };
+
+    // 3. وظيفة إيقاف التسجيل
+    stopRecordBtn.onclick = () => {
+        mediaRecorder.stop();
+        startRecordBtn.disabled = false;
+        stopRecordBtn.disabled = true;
+        statusText.innerText = "الحالة: تم إنهاء التسجيل وجارٍ التحميل";
+    };
+
+    // 4. تصدير وتحميل الفيديو
+    function exportVideo() {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.style = 'display: none';
+        a.href = url;
+        a.download = 'screen-recording-' + Date.now() + '.webm';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+
 </body>
 </html>
