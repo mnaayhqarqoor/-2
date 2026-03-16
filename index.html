@@ -3,101 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مسجل الشاشة الاحترافي</title>
+    <title>Streamer Pro | بث الشاشة الذكي</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f6f8fa; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: white; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px; width: 80%; max-width: 800px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        video { width: 100%; border-radius: 6px; background: #000; margin-bottom: 15px; }
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .start-btn { background-color: #2da44e; color: white; }
-        .stop-btn { background-color: #cf222e; color: white; }
-        button:disabled { background-color: #808080; cursor: not-allowed; }
-        #overlay-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #d0d7de; border-radius: 6px; box-sizing: border-box; }
-        .status { font-size: 0.9em; color: #57606a; margin-top: 10px; }
+        :root {
+            --primary: #3fb950;
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 90%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p { color: #8b949e; }
+
+        /* منطقة العرض الاحترافية */
+        .viewer-box {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            aspect-ratio: 16 / 9;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* الطبقة النصية فوق البث */
+        #live-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 10;
+            display: none; /* يظهر فقط عند البدء */
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* أدوات التحكم */
+        .controls {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+        }
+
+        input[type="text"]:focus { border-color: var(--primary); }
+
+        button {
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #47c95a; }
+
+        .btn-danger { background: #da3633; color: #fff; display: none; }
+
+        .status-bar {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #8b949e;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #8b949e; }
+        .dot.active { background: #f85149; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🎥 مسجل الشاشة مع إضافة نصوص</h2>
-    
-    <input type="text" id="overlay-input" placeholder="اكتب ملاحظة أو نصاً ليظهر في التسجيل...">
-
-    <video id="preview" autoplay muted></video>
-
-    <div class="controls">
-        <button id="startShare" class="start-btn">1. مشاركة الشاشة</button>
-        <button id="startRecord" class="start-btn" disabled>2. بدء التسجيل</button>
-        <button id="stopRecord" class="stop-btn" disabled>إيقاف وتحميل</button>
+<div class="app-container">
+    <div class="header">
+        <h1>Streamer Pro</h1>
+        <p>بث شاشتك ككاميرا احترافية مع إضافة نصوص تفاعلية</p>
     </div>
 
-    <div class="status" id="statusText">الحالة: جاهز للبدء</div>
+    <div class="viewer-box">
+        <div id="live-overlay">LIVE: جاري العرض...</div>
+        <video id="main-stream" autoplay playsinline muted></video>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="overlay-input" placeholder="اكتب نصاً ليظهر فوق البث مباشرة...">
+        <button id="start-btn" class="btn-primary" onclick="initStream()">بدء البث الحي</button>
+        <button id="stop-btn" class="btn-danger" onclick="stopStream()">إيقاف</button>
+    </div>
+
+    <div class="status-bar">
+        <div id="status-dot" class="dot"></div>
+        <span id="status-text">الحالة: غير متصل</span>
+    </div>
 </div>
 
 <script>
-    let mediaRecorder;
-    let recordedChunks = [];
-    let screenStream;
+    let streamInstance = null;
+    const videoEl = document.getElementById('main-stream');
+    const overlayEl = document.getElementById('live-overlay');
+    const inputEl = document.getElementById('overlay-input');
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
 
-    const preview = document.getElementById('preview');
-    const startShareBtn = document.getElementById('startShare');
-    const startRecordBtn = document.getElementById('startRecord');
-    const stopRecordBtn = document.getElementById('stopRecord');
-    const statusText = document.getElementById('statusText');
+    // تحديث النص الحي
+    inputEl.oninput = (e) => {
+        overlayEl.innerText = e.target.value ? `LIVE: ${e.target.value}` : 'LIVE: جاري العرض...';
+    };
 
-    // 1. وظيفة مشاركة الشاشة
-    startShareBtn.onclick = async () => {
+    async function initStream() {
         try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { cursor: "always" },
+            streamInstance = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "always", frameRate: 30 },
                 audio: true
             });
-            preview.srcObject = screenStream;
-            startRecordBtn.disabled = false;
-            statusText.innerText = "الحالة: تم مشاركة الشاشة بنجاح";
+
+            videoEl.srcObject = streamInstance;
+            
+            // تحديث الواجهة
+            overlayEl.style.display = 'block';
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
+            statusDot.classList.add('active');
+            statusText.innerText = 'الحالة: بث مباشر الآن';
+
+            // إذا أغلق المستخدم المشاركة من زر المتصفح
+            streamInstance.getVideoTracks()[0].onended = stopStream;
+
         } catch (err) {
-            console.error("خطأ: " + err);
-            statusText.innerText = "الحالة: تم إلغاء المشاركة أو حدث خطأ";
+            console.error("تعذر بدء البث:", err);
+            alert("يرجى إعطاء صلاحية الوصول للشاشة");
         }
-    };
+    }
 
-    // 2. وظيفة بدء التسجيل
-    startRecordBtn.onclick = () => {
-        recordedChunks = [];
-        mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm; codecs=vp9' });
-
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = exportVideo;
-
-        mediaRecorder.start();
-        startRecordBtn.disabled = true;
-        stopRecordBtn.disabled = false;
-        statusText.innerText = "الحالة: جارٍ التسجيل الآن...";
-    };
-
-    // 3. وظيفة إيقاف التسجيل
-    stopRecordBtn.onclick = () => {
-        mediaRecorder.stop();
-        startRecordBtn.disabled = false;
-        stopRecordBtn.disabled = true;
-        statusText.innerText = "الحالة: تم إنهاء التسجيل وجارٍ التحميل";
-    };
-
-    // 4. تصدير وتحميل الفيديو
-    function exportVideo() {
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        document.body.appendChild(a);
-        a.style = 'display: none';
-        a.href = url;
-        a.download = 'screen-recording-' + Date.now() + '.webm';
-        a.click();
-        window.URL.revokeObjectURL(url);
+    function stopStream() {
+        if (streamInstance) {
+            streamInstance.getTracks().forEach(track => track.stop());
+            videoEl.srcObject = null;
+        }
+        
+        overlayEl.style.display = 'none';
+        startBtn.style.display = 'block';
+        stopBtn.style.display = 'none';
+        statusDot.classList.remove('active');
+        statusText.innerText = 'الحالة: تم إيقاف البث';
     }
 </script>
 
