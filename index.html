@@ -2,215 +2,25 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamer Pro | بث الشاشة الذكي</title>
-    <style>
-        :root {
-            --primary: #3fb950;
-            --bg: #0d1117;
-            --card-bg: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            width: 90%;
-            max-width: 1000px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            color: #fff;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p { color: #8b949e; }
-
-        /* منطقة العرض الاحترافية */
-        .viewer-box {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid var(--border);
-            aspect-ratio: 16 / 9;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* الطبقة النصية فوق البث */
-        #live-overlay {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 8px 15px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            font-weight: bold;
-            border-radius: 4px;
-            z-index: 10;
-            display: none; /* يظهر فقط عند البدء */
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-
-        /* أدوات التحكم */
-        .controls {
-            margin-top: 1.5rem;
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-        }
-
-        input[type="text"] {
-            background: #0d1117;
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 6px;
-            color: #fff;
-            outline: none;
-        }
-
-        input[type="text"]:focus { border-color: var(--primary); }
-
-        button {
-            padding: 12px 24px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: #47c95a; }
-
-        .btn-danger { background: #da3633; color: #fff; display: none; }
-
-        .status-bar {
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: #8b949e;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #8b949e; }
-        .dot.active { background: #f85149; }
-    </style>
+    <title>سحب عيد الفطر المليون</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="app-container">
-    <div class="header">
-        <h1>Streamer Pro</h1>
-        <p>بث شاشتك ككاميرا احترافية مع إضافة نصوص تفاعلية</p>
+    <div class="container">
+        <img src="logo.jpg" alt="Logo" class="logo">
+        <h1>سجل الآن في سحب الـ $500,000</h1>
+        <form id="regForm">
+            <input type="text" id="userName" placeholder="الاسم الكامل" required>
+            <input type="tel" id="userPhone" placeholder="رقم الهاتف" required>
+            <button type="submit" class="btn-gold">دخول السحب</button>
+        </form>
     </div>
 
-    <div class="viewer-box">
-        <div id="live-overlay">LIVE: جاري العرض...</div>
-        <video id="main-stream" autoplay playsinline muted></video>
+    <div id="adminPanel" class="hidden">
+        <input type="password" id="adminPass" placeholder="الكود السري">
+        <button onclick="checkAdmin()">دخول المسؤول</button>
     </div>
 
-    <div class="controls">
-        <input type="text" id="overlay-input" placeholder="اكتب نصاً ليظهر فوق البث مباشرة...">
-        <button id="start-btn" class="btn-primary" onclick="initStream()">بدء البث الحي</button>
-        <button id="stop-btn" class="btn-danger" onclick="stopStream()">إيقاف</button>
-    </div>
-
-    <div class="status-bar">
-        <div id="status-dot" class="dot"></div>
-        <span id="status-text">الحالة: غير متصل</span>
-    </div>
-</div>
-
-<script>
-    let streamInstance = null;
-    const videoEl = document.getElementById('main-stream');
-    const overlayEl = document.getElementById('live-overlay');
-    const inputEl = document.getElementById('overlay-input');
-    const startBtn = document.getElementById('start-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-
-    // تحديث النص الحي
-    inputEl.oninput = (e) => {
-        overlayEl.innerText = e.target.value ? `LIVE: ${e.target.value}` : 'LIVE: جاري العرض...';
-    };
-
-    async function initStream() {
-        try {
-            streamInstance = await navigator.mediaDevices.getDisplayMedia({
-                video: { cursor: "always", frameRate: 30 },
-                audio: true
-            });
-
-            videoEl.srcObject = streamInstance;
-            
-            // تحديث الواجهة
-            overlayEl.style.display = 'block';
-            startBtn.style.display = 'none';
-            stopBtn.style.display = 'block';
-            statusDot.classList.add('active');
-            statusText.innerText = 'الحالة: بث مباشر الآن';
-
-            // إذا أغلق المستخدم المشاركة من زر المتصفح
-            streamInstance.getVideoTracks()[0].onended = stopStream;
-
-        } catch (err) {
-            console.error("تعذر بدء البث:", err);
-            alert("يرجى إعطاء صلاحية الوصول للشاشة");
-        }
-    }
-
-    function stopStream() {
-        if (streamInstance) {
-            streamInstance.getTracks().forEach(track => track.stop());
-            videoEl.srcObject = null;
-        }
-        
-        overlayEl.style.display = 'none';
-        startBtn.style.display = 'block';
-        stopBtn.style.display = 'none';
-        statusDot.classList.remove('active');
-        statusText.innerText = 'الحالة: تم إيقاف البث';
-    }
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
